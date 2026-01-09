@@ -2,43 +2,69 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>МалоРиса — Snake</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>МалоРиса — Змейка</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
 
 <style>
 :root{
-  --bg:#111;--panel:#1c1c1c;--canvas:#000;
-  --text:#fff;--accent:#ff6b9a;
+  --bg:#111;
+  --panel:#1c1c1c;
+  --canvas:#000;
+  --text:#fff;
+  --accent:#ff6b9a;
 }
 body.light{
-  --bg:#f3f3f3;--panel:#fff;--canvas:#e6e6e6;--text:#111;
+  --bg:#f3f3f3;
+  --panel:#ffffff;
+  --canvas:#e6e6e6;
+  --text:#111;
 }
+
 *{margin:0;padding:0;box-sizing:border-box}
 body{
-  background:var(--bg);color:var(--text);
-  font-family:system-ui;
-  display:flex;flex-direction:column;align-items:center;
-  height:100vh;touch-action:none;
+  background:var(--bg);
+  color:var(--text);
+  font-family:system-ui, sans-serif;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  height:100vh;
+  touch-action:none;
 }
+
 header{
-  width:100%;padding:10px;
-  display:flex;justify-content:space-between;align-items:center;
+  width:100%;
+  padding:12px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
   background:var(--panel);
 }
+
 .title{
-  font-family:'Press Start 2P';
-  font-size:14px;color:var(--accent);
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+  color:var(--accent);
 }
+
 .btn-ui{
-  padding:6px 10px;border-radius:10px;
-  background:#222;font-size:14px;
+  font-size:14px;
+  padding:6px 10px;
+  border-radius:10px;
+  background:#2a2a2a;
+  color:#fff;
+  user-select:none;
 }
+body.light .btn-ui{background:#ddd;color:#000}
+
 canvas{
   background:var(--canvas);
-  border-radius:12px;margin:10px 0;
+  border-radius:12px;
+  margin:10px 0;
 }
+
 .controls{
   display:grid;
   grid-template-columns:repeat(3,70px);
@@ -46,47 +72,82 @@ canvas{
   gap:10px;
 }
 .btn{
-  background:#222;border-radius:14px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:26px;
+  background:#222;
+  border-radius:14px;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  font-size:28px;
 }
+body.light .btn{background:#ddd;color:#000}
 .btn:active{background:var(--accent)}
+.up{grid-column:2}
+.left{grid-column:1}
+.down{grid-column:2}
+.right{grid-column:3}
 
+/* Экраны */
 .overlay{
-  position:fixed;inset:0;background:var(--bg);
-  display:flex;flex-direction:column;
-  justify-content:center;align-items:center;z-index:10;
+  position:fixed;
+  inset:0;
+  background:var(--bg);
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
 }
+
 .logo{
-  font-family:'Press Start 2P';
-  font-size:24px;color:var(--accent);
+  font-family:'Press Start 2P', monospace;
+  font-size:24px;
+  color:var(--accent);
   animation:float 2.5s ease-in-out infinite;
+  margin-bottom:30px;
 }
+
 @keyframes float{
   0%{transform:translateY(0)}
   50%{transform:translateY(-12px)}
   100%{transform:translateY(0)}
 }
+
 .pixel-btn{
-  font-family:'Press Start 2P';
-  padding:14px 26px;border-radius:14px;
-  background:var(--accent);color:#000;
-  margin-top:24px;
+  font-family:'Press Start 2P', monospace;
+  font-size:14px;
+  padding:16px 28px;
+  border-radius:14px;
+  background:var(--accent);
+  color:#000;
+  margin-top:20px;
+}
+
+.gameover{
+  font-family:'Press Start 2P', monospace;
+  font-size:18px;
+  margin-bottom:16px;
+}
+.small{
+  font-size:12px;
+  margin-top:8px;
 }
 </style>
 </head>
 
 <body>
 
+<!-- Старт -->
 <div class="overlay" id="startScreen">
   <div class="logo">МАЛОРИСА</div>
   <div class="pixel-btn" id="playBtn">ИГРАТЬ</div>
 </div>
 
+<!-- Game Over -->
 <div class="overlay" id="gameOverScreen" style="display:none">
-  <div class="logo" style="font-size:18px">GAME OVER</div>
-  <div style="font-family:'Press Start 2P';font-size:12px;margin-top:10px">
-    РЕКОРД: <span id="finalRecord">0</span>
+  <div class="gameover">GAME OVER</div>
+  <div class="small">
+    Счет: <span id="finalScore">0</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+    Рекорд: <span id="finalRecord">0</span>
   </div>
   <div class="pixel-btn" id="restartBtn">СНОВА</div>
 </div>
@@ -97,82 +158,66 @@ canvas{
   <span style="display:flex;gap:6px">
     <span id="record">0</span>
     <span class="btn-ui" id="pauseBtn">⏸</span>
-    <span class="btn-ui" id="soundBtn">🔊</span>
+    <span class="btn-ui" id="themeBtn">☀︎ / 🌙</span>
   </span>
 </header>
 
 <canvas id="game" width="320" height="320"></canvas>
 
 <div class="controls">
-  <div></div><div class="btn" id="up">▲</div><div></div>
-  <div class="btn" id="left">◀</div><div class="btn" id="down">▼</div><div class="btn" id="right">▶</div>
+  <div></div><div class="btn up">▲</div><div></div>
+  <div class="btn left">◀</div><div class="btn down">▼</div><div class="btn right">▶</div>
 </div>
 
 <script>
+const canvas = document.getElementById("game")
+const ctx = canvas.getContext("2d")
+
+const box = 20
+const cols = canvas.width / box
+const rows = canvas.height / box
+
+let snake, dir, food, score
+let paused = true
+let record = localStorage.getItem("malorisa_record") || 0
+
+document.getElementById("record").innerText = record
+document.getElementById("finalRecord").innerText = record
+
+const foods = ["🍣","🍟","🍔","🍕"]
+
 /* ===== ЗВУК ===== */
 const audioCtx = new (window.AudioContext||window.webkitAudioContext)()
-let soundEnabled = true
-let musicTimer
-
-function tone(freq,dur=0.1,type="square"){
-  if(!soundEnabled) return
-  const o=audioCtx.createOscillator()
-  const g=audioCtx.createGain()
-  o.type=type
-  o.frequency.value=freq
-  g.gain.value=0.08
+function playEatSound(){
+  const o = audioCtx.createOscillator()
+  const g = audioCtx.createGain()
+  o.type = "square"
+  o.frequency.setValueAtTime(880,audioCtx.currentTime)
+  g.gain.setValueAtTime(0.08,audioCtx.currentTime)
   o.connect(g).connect(audioCtx.destination)
   o.start()
-  o.stop(audioCtx.currentTime+dur)
+  o.stop(audioCtx.currentTime+0.1)
 }
 
-/* эффекты */
-const soundEat=()=>{tone(900,0.05);setTimeout(()=>tone(1200,0.05),60)}
-const soundCrash=()=>tone(200,0.3,"sawtooth")
-const soundStart=()=>tone(500,0.15)
-
-/* ===== ФИРМЕННЫЙ 8-BIT ТРЕК МАЛОРИСА ===== */
-const malorisaTrack = [
-  660,0,880,0,990,880,
-  660,0,660,880,
-  990,0,880,0,660
-]
-let noteIndex=0
-
-function startMusic(){
-  if(musicTimer) return
-  musicTimer=setInterval(()=>{
-    const note=malorisaTrack[noteIndex]
-    if(note) tone(note,0.12,"triangle")
-    noteIndex=(noteIndex+1)%malorisaTrack.length
-  },180)
+function startSound(){
+  const o = audioCtx.createOscillator()
+  const g = audioCtx.createGain()
+  o.type="square"
+  o.frequency.setValueAtTime(440,audioCtx.currentTime)
+  g.gain.setValueAtTime(0.1,audioCtx.currentTime)
+  o.connect(g).connect(audioCtx.destination)
+  o.start()
+  o.stop(audioCtx.currentTime+0.15)
 }
-function stopMusic(){
-  clearInterval(musicTimer)
-  musicTimer=null
-}
-
-/* ===== ИГРА ===== */
-const canvas=document.getElementById("game")
-const ctx=canvas.getContext("2d")
-const box=20
-const cols=canvas.width/box
-const rows=canvas.height/box
-const foods=["🍣","🍔","🍟","🍕"]
-
-let snake,dir,food,score
-let paused=true
-let record=localStorage.getItem("malorisa_record")||0
-record.innerText=record
 
 function start(){
   snake=[{x:10,y:10}]
   dir={x:1,y:0}
   score=0
   paused=false
-  score.innerText=0
+  document.getElementById("score").innerText=score
+  document.getElementById("pauseBtn").innerText="⏸"
   spawnFood()
-  startMusic()
 }
 
 function spawnFood(){
@@ -185,24 +230,37 @@ function spawnFood(){
 
 function gameOver(){
   paused=true
-  stopMusic()
-  soundCrash()
   if(score>record){
     record=score
     localStorage.setItem("malorisa_record",record)
   }
-  finalRecord.innerText=record
-  gameOverScreen.style.display="flex"
+  document.getElementById("score").innerText=score
+  document.getElementById("record").innerText=record
+  document.getElementById("finalScore").innerText=score
+  document.getElementById("finalRecord").innerText=record
+  document.getElementById("gameOverScreen").style.display="flex"
 }
 
 function update(){
   if(paused) return
-  const head={x:(snake[0].x+dir.x+cols)%cols,y:(snake[0].y+dir.y+rows)%rows}
-  if(snake.some(p=>p.x===head.x&&p.y===head.y)){gameOver();return}
+
+  const head={
+    x:(snake[0].x+dir.x+cols)%cols,
+    y:(snake[0].y+dir.y+rows)%rows
+  }
+
+  if(snake.some(p=>p.x===head.x&&p.y===head.y)){
+    gameOver()
+    return
+  }
+
   snake.unshift(head)
-  if(head.x===food.x&&head.y===food.y){
-    score++;score.innerText=score
-    soundEat();spawnFood()
+
+  if(head.x===food.x && head.y===food.y){
+    score++
+    document.getElementById("score").innerText = score
+    playEatSound()  // 🎵 ЗВУК ПОДБОРА ЕДЫ
+    spawnFood()
   }else snake.pop()
 }
 
@@ -210,41 +268,41 @@ function draw(){
   ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--canvas')
   ctx.fillRect(0,0,canvas.width,canvas.height)
   ctx.font="18px serif"
-  ctx.fillText(food.icon,food.x*box+2,food.y*box+18)
+  ctx.fillText(food.icon, food.x*box+2, food.y*box+18)
   ctx.fillStyle="#ff6b9a"
   snake.forEach(p=>ctx.fillRect(p.x*box,p.y*box,box-2,box-2))
 }
 
 setInterval(()=>{update();draw()},150)
 
-/* управление */
 function setDir(x,y){
-  if(dir.x!==-x&&dir.y!==-y) dir={x,y}
-}
-up.onclick=()=>setDir(0,-1)
-down.onclick=()=>setDir(0,1)
-left.onclick=()=>setDir(-1,0)
-right.onclick=()=>setDir(1,0)
-
-pauseBtn.onclick=()=>{
-  paused=!paused
-  pauseBtn.innerText=paused?"▶":"⏸"
-  paused?stopMusic():startMusic()
+  if(paused) return
+  if(dir.x!==-x && dir.y!==-y) dir={x,y}
 }
 
-soundBtn.onclick=()=>{
-  soundEnabled=!soundEnabled
-  soundBtn.innerText=soundEnabled?"🔊":"🔇"
+document.querySelector(".up").onclick = ()=>setDir(0,-1)
+document.querySelector(".down").onclick = ()=>setDir(0,1)
+document.querySelector(".left").onclick = ()=>setDir(-1,0)
+document.querySelector(".right").onclick = ()=>setDir(1,0)
+
+document.getElementById("pauseBtn").onclick = ()=>{
+  paused = !paused
+  document.getElementById("pauseBtn").innerText = paused?"▶":"⏸"
 }
 
-playBtn.onclick=()=>{
-  startScreen.style.display="none"
-  soundStart()
+document.getElementById("themeBtn").onclick = ()=>{
+  document.body.classList.toggle("light")
+}
+
+document.getElementById("playBtn").onclick = ()=>{
+  document.getElementById("startScreen").style.display="none"
+  startSound()
   start()
 }
-restartBtn.onclick=()=>{
-  gameOverScreen.style.display="none"
-  soundStart()
+
+document.getElementById("restartBtn").onclick = ()=>{
+  document.getElementById("gameOverScreen").style.display="none"
+  startSound()
   start()
 }
 </script>
