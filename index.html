@@ -14,8 +14,9 @@
 </script>
 <noscript><div><img src="https://mc.yandex.ru/watch/106208328" style="position:absolute; left:-9999px;" alt="" /></div></noscript>
 <!-- /Yandex.Metrika counter -->
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <title>МалоРиса — Змейка</title>
 
 <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
@@ -27,19 +28,28 @@
   --canvas:#000;
   --text:#fff;
   --accent:#ff6b9a;
+  --grid:#1a1a1a;
+
+  /* Controls */
+  --btn-face:#3a3a3a;
+  --btn-shadow:#1a1a1a;
 }
 body.light{
   --bg:#f3f3f3;
-  --panel:#ffffff;
+  --panel:#fff;
   --canvas:#e6e6e6;
   --text:#111;
+  --grid:#d0d0d0;
+
+  --btn-face:#d7d7d7;
+  --btn-shadow:#b5b5b5;
 }
 
 *{margin:0;padding:0;box-sizing:border-box}
 body{
   background:var(--bg);
   color:var(--text);
-  font-family:system-ui, sans-serif;
+  font-family:system-ui,sans-serif;
   display:flex;
   flex-direction:column;
   align-items:center;
@@ -50,10 +60,10 @@ body{
 header{
   width:100%;
   padding:12px;
+  background:var(--panel);
   display:flex;
   justify-content:space-between;
   align-items:center;
-  background:var(--panel);
 }
 
 .title{
@@ -63,7 +73,6 @@ header{
 }
 
 .btn-ui{
-  font-size:14px;
   padding:6px 10px;
   border-radius:10px;
   background:#2a2a2a;
@@ -74,26 +83,75 @@ body.light .btn-ui{background:#ddd;color:#000}
 
 canvas{
   background:var(--canvas);
-  border-radius:12px;
+  border-radius:14px;
   margin:10px 0;
+  image-rendering:pixelated;
 }
 
 .controls{
+  /* ✅ ниже + дальше друг от друга */
+  margin-top: 50px;                 /* было без margin */
   display:grid;
-  grid-template-columns:repeat(3,70px);
-  grid-template-rows:repeat(2,70px);
-  gap:10px;
+  grid-template-columns:repeat(3,72px);
+  grid-template-rows:repeat(2,72px);
+  gap: 18px;                        /* было 10px */
+  position:relative;               /* для подложки */
 }
+
+/* Подложка под крестовину (ретро-пульт) */
+.controls::before{
+  content:"";
+  position:absolute;
+  width: 210px;
+  height: 210px;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(255,255,255,0.04);
+  border-radius: 28px;
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,0.35),
+    inset 3px 3px 0 rgba(255,255,255,0.06),
+    0 10px 30px rgba(0,0,0,0.25);
+  z-index:-1;
+}
+body.light .controls::before{
+  background: rgba(0,0,0,0.04);
+  box-shadow:
+    inset -3px -3px 0 rgba(0,0,0,0.18),
+    inset 3px 3px 0 rgba(255,255,255,0.35),
+    0 10px 30px rgba(0,0,0,0.08);
+}
+
 .btn{
-  background:#222;
-  border-radius:14px;
+  /* ✅ GameBoy-ish кнопки */
+  background: var(--btn-face);
+  border-radius: 10px;
   display:flex;
   justify-content:center;
   align-items:center;
-  font-size:28px;
+  font-size: 26px;
+  color: #eee;
+  user-select:none;
+
+  box-shadow:
+    inset -2px -2px 0 rgba(0,0,0,0.45),
+    inset 2px 2px 0 rgba(255,255,255,0.10),
+    0 7px 0 var(--btn-shadow);
+
+  transition: transform .05s, box-shadow .05s, filter .05s;
 }
-body.light .btn{background:#ddd;color:#000}
-.btn:active{background:var(--accent)}
+body.light .btn{color:#222}
+
+.btn:active{
+  transform: translateY(4px);
+  box-shadow:
+    inset -2px -2px 0 rgba(0,0,0,0.55),
+    inset 2px 2px 0 rgba(255,255,255,0.07),
+    0 3px 0 var(--btn-shadow);
+  filter: brightness(1.03);
+}
+
 .up{grid-column:2}
 .left{grid-column:1}
 .down{grid-column:2}
@@ -115,10 +173,9 @@ body.light .btn{background:#ddd;color:#000}
   font-family:'Press Start 2P', monospace;
   font-size:24px;
   color:var(--accent);
+  margin-bottom:26px;
   animation:float 2.5s ease-in-out infinite;
-  margin-bottom:30px;
 }
-
 @keyframes float{
   0%{transform:translateY(0)}
   50%{transform:translateY(-12px)}
@@ -127,51 +184,70 @@ body.light .btn{background:#ddd;color:#000}
 
 .pixel-btn{
   font-family:'Press Start 2P', monospace;
-  font-size:14px;
   padding:16px 28px;
   border-radius:14px;
   background:var(--accent);
   color:#000;
-  margin-top:20px;
+  margin-top:12px;
+  user-select:none;
 }
 
-.gameover{
-  font-family:'Press Start 2P', monospace;
-  font-size:18px;
-  margin-bottom:16px;
+.pixel-btn.secondary{
+  background:transparent;
+  color:var(--accent);
+  border:2px solid var(--accent);
 }
+
 .small{
   font-size:12px;
-  margin-top:8px;
+  margin-top:10px;
+}
+#toast{
+  opacity:0;
+  transition:opacity .2s;
 }
 </style>
 </head>
 
 <body>
 
-<!-- Старт -->
-<div class="overlay" id="startScreen">
+<!-- MAIN MENU -->
+<div class="overlay" id="start">
   <div class="logo">МАЛОРИСА</div>
-  <div class="pixel-btn" id="playBtn">ИГРАТЬ</div>
+  <div class="pixel-btn" id="play">ИГРАТЬ</div>
+
+  <div class="pixel-btn secondary" id="invite">ПРИГЛАСИТЬ ДРУГА</div>
+  <div class="pixel-btn secondary" id="site">ПЕРЕЙТИ НА САЙТ</div>
+
+  <div class="small" id="toast"></div>
 </div>
 
-<!-- Game Over -->
-<div class="overlay" id="gameOverScreen" style="display:none">
-  <div class="gameover">GAME OVER</div>
-  <div class="small">
-    Счет: <span id="finalScore">0</span> &nbsp;&nbsp;|&nbsp;&nbsp;
+<!-- PAUSE MENU -->
+<div class="overlay" id="pauseMenu" style="display:none">
+  <div class="logo" style="animation:none">ПАУЗА</div>
+  <div class="pixel-btn" id="resume">ПРОДОЛЖИТЬ</div>
+  <div class="pixel-btn secondary" id="toMenu">В ГЛАВНОЕ МЕНЮ</div>
+</div>
+
+<!-- GAME OVER -->
+<div class="overlay" id="over" style="display:none">
+  <div class="logo" style="animation:none">GAME OVER</div>
+  <div class="small" style="opacity:1">
+    Счет: <span id="finalScore">0</span> |
     Рекорд: <span id="finalRecord">0</span>
   </div>
-  <div class="pixel-btn" id="restartBtn">СНОВА</div>
+  <div class="pixel-btn" id="restart">СНОВА</div>
+  <div class="pixel-btn secondary" id="menuFromOver">В ГЛАВНОЕ МЕНЮ</div>
 </div>
 
 <header>
   <span id="score">0</span>
   <span class="title">МАЛОРИСА</span>
-  <span style="display:flex;gap:6px">
+  <span style="display:flex;gap:6px;align-items:center">
     <span id="record">0</span>
-    <span class="btn-ui" id="pauseBtn">⏸</span>
-    <span class="btn-ui" id="themeBtn">☀︎ / 🌙</span>
+    <span class="btn-ui" id="sound">🔊</span>
+    <span class="btn-ui" id="pause">⏸</span>
+    <span class="btn-ui" id="theme">☀︎ / 🌙</span>
   </span>
 </header>
 
@@ -183,141 +259,523 @@ body.light .btn{background:#ddd;color:#000}
 </div>
 
 <script>
-const canvas = document.getElementById("game")
-const ctx = canvas.getContext("2d")
+(() => {
+  const $ = (id) => document.getElementById(id)
 
-const box = 20
-const cols = canvas.width / box
-const rows = canvas.height / box
+  // DOM
+  const canvas = $("game")
+  const ctx = canvas.getContext("2d")
+  ctx.imageSmoothingEnabled = false
 
-let snake, dir, food, score
-let paused = true
-let record = localStorage.getItem("malorisa_record") || 0
+  const UI = {
+    start: $("start"),
+    pauseMenu: $("pauseMenu"),
+    over: $("over"),
 
-document.getElementById("record").innerText = record
-document.getElementById("finalRecord").innerText = record
+    play: $("play"),
+    invite: $("invite"),
+    site: $("site"),
+    toast: $("toast"),
 
-const foods = ["🍣","🍟","🍔","🍕"]
+    resume: $("resume"),
+    toMenu: $("toMenu"),
 
-/* ===== ЗВУК ===== */
-const audioCtx = new (window.AudioContext||window.webkitAudioContext)()
-function playEatSound(){
-  const o = audioCtx.createOscillator()
-  const g = audioCtx.createGain()
-  o.type = "square"
-  o.frequency.setValueAtTime(880,audioCtx.currentTime)
-  g.gain.setValueAtTime(0.08,audioCtx.currentTime)
-  o.connect(g).connect(audioCtx.destination)
-  o.start()
-  o.stop(audioCtx.currentTime+0.1)
-}
+    restart: $("restart"),
+    menuFromOver: $("menuFromOver"),
 
-function startSound(){
-  const o = audioCtx.createOscillator()
-  const g = audioCtx.createGain()
-  o.type="square"
-  o.frequency.setValueAtTime(440,audioCtx.currentTime)
-  g.gain.setValueAtTime(0.1,audioCtx.currentTime)
-  o.connect(g).connect(audioCtx.destination)
-  o.start()
-  o.stop(audioCtx.currentTime+0.15)
-}
+    score: $("score"),
+    record: $("record"),
+    finalScore: $("finalScore"),
+    finalRecord: $("finalRecord"),
 
-function start(){
-  snake=[{x:10,y:10}]
-  dir={x:1,y:0}
-  score=0
-  paused=false
-  document.getElementById("score").innerText=score
-  document.getElementById("pauseBtn").innerText="⏸"
-  spawnFood()
-}
-
-function spawnFood(){
-  food={
-    x:Math.floor(Math.random()*cols),
-    y:Math.floor(Math.random()*rows),
-    icon:foods[Math.floor(Math.random()*foods.length)]
-  }
-}
-
-function gameOver(){
-  paused=true
-  if(score>record){
-    record=score
-    localStorage.setItem("malorisa_record",record)
-  }
-  document.getElementById("score").innerText=score
-  document.getElementById("record").innerText=record
-  document.getElementById("finalScore").innerText=score
-  document.getElementById("finalRecord").innerText=record
-  document.getElementById("gameOverScreen").style.display="flex"
-}
-
-function update(){
-  if(paused) return
-
-  const head={
-    x:(snake[0].x+dir.x+cols)%cols,
-    y:(snake[0].y+dir.y+rows)%rows
+    pause: $("pause"),
+    theme: $("theme"),
+    sound: $("sound"),
   }
 
-  if(snake.some(p=>p.x===head.x&&p.y===head.y)){
-    gameOver()
-    return
+  // Constants
+  const BOX = 20
+  const COLS = canvas.width / BOX
+  const ROWS = canvas.height / BOX
+  const TICK_MS = 150 // фиксированная скорость (без роста сложности)
+  const FOODS = ["🍣","🍟","🍔","🍕"]
+
+  // Persistent settings
+  let record = Number(localStorage.getItem("malorisa_record") || 0)
+  let soundOn = localStorage.getItem("malorisa_sound") !== "0"
+
+  UI.record.textContent = record
+  UI.finalRecord.textContent = record
+  UI.sound.textContent = soundOn ? "🔊" : "🔇"
+
+  // Toast
+  const showToast = (text) => {
+    UI.toast.textContent = text
+    UI.toast.style.opacity = "1"
+    clearTimeout(showToast._t)
+    showToast._t = setTimeout(() => UI.toast.style.opacity = "0", 1400)
   }
 
-  snake.unshift(head)
+  // Share (Invite friend)
+  const shareGame = async () => {
+    const text = "Попробуй побить мой рекорд в змейке от МалоРиса"
+    const url = location.href
 
-  if(head.x===food.x && head.y===food.y){
-    score++
-    document.getElementById("score").innerText = score
-    playEatSound()  // 🎵 ЗВУК ПОДБОРА ЕДЫ
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: "МалоРиса — Змейка", text, url })
+        return
+      } catch {}
+    }
+
+    const fallback = `${text}\n${url}`
+    try {
+      await navigator.clipboard.writeText(fallback)
+      showToast("Ссылка скопирована ✅")
+    } catch {
+      window.prompt("Скопируй и отправь другу:", fallback)
+    }
+  }
+
+  // Audio (safe start after user gesture)
+  let audioCtx = null
+  const initAudio = async () => {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
+    if (audioCtx.state === "suspended") {
+      try { await audioCtx.resume() } catch {}
+    }
+  }
+  const beep = (freq, dur = 0.1) => {
+    if (!soundOn || !audioCtx) return
+    const o = audioCtx.createOscillator()
+    const g = audioCtx.createGain()
+    o.type = "square"
+    o.frequency.setValueAtTime(freq, audioCtx.currentTime)
+    g.gain.setValueAtTime(0.08, audioCtx.currentTime)
+    o.connect(g).connect(audioCtx.destination)
+    o.start()
+    o.stop(audioCtx.currentTime + dur)
+  }
+
+  const vibrate = (ms = 20) => {
+    if (navigator.vibrate) navigator.vibrate(ms)
+  }
+
+  // State
+  const State = {
+    mode: "start", // start | playing | paused | dying | gameover
+    snake: [],
+    dir: { x: 1, y: 0 },
+    food: { x: 5, y: 5, icon: "🍣" },
+    score: 0,
+
+    // Animations
+    pop: null,      // {x,y,t, dur}
+    chomp: null,    // {t, dur}
+    death: null,    // {t, dur, particles: [...]}
+  }
+
+  // Helpers
+  const cellToPx = (c) => c * BOX
+  const now = () => performance.now()
+
+  const hideAllOverlays = () => {
+    UI.start.style.display = "none"
+    UI.pauseMenu.style.display = "none"
+    UI.over.style.display = "none"
+  }
+
+  const goToMenu = () => {
+    State.mode = "start"
+    hideAllOverlays()
+    UI.start.style.display = "flex"
+    UI.pause.textContent = "⏸"
+  }
+
+  const spawnFood = () => {
+    let f
+    do {
+      f = {
+        x: Math.floor(Math.random() * COLS),
+        y: Math.floor(Math.random() * ROWS),
+        icon: FOODS[Math.floor(Math.random() * FOODS.length)],
+      }
+    } while (State.snake.some(p => p.x === f.x && p.y === f.y))
+    State.food = f
+  }
+
+  const startGame = () => {
+    State.snake = [{ x: 10, y: 10 }]
+    State.dir = { x: 1, y: 0 }
+    State.score = 0
+    State.mode = "playing"
+
+    State.pop = null
+    State.chomp = null
+    State.death = null
+
+    UI.score.textContent = "0"
+    UI.pause.textContent = "⏸"
     spawnFood()
-  }else snake.pop()
-}
+  }
 
-function draw(){
-  ctx.fillStyle=getComputedStyle(document.body).getPropertyValue('--canvas')
-  ctx.fillRect(0,0,canvas.width,canvas.height)
-  ctx.font="18px serif"
-  ctx.fillText(food.icon, food.x*box+2, food.y*box+18)
-  ctx.fillStyle="#ff6b9a"
-  snake.forEach(p=>ctx.fillRect(p.x*box,p.y*box,box-2,box-2))
-}
+  const endGame = () => {
+    State.mode = "gameover"
 
-setInterval(()=>{update();draw()},150)
+    if (State.score > record) {
+      record = State.score
+      localStorage.setItem("malorisa_record", String(record))
+    }
 
-function setDir(x,y){
-  if(paused) return
-  if(dir.x!==-x && dir.y!==-y) dir={x,y}
-}
+    UI.record.textContent = record
+    UI.finalRecord.textContent = record
+    UI.finalScore.textContent = State.score
 
-document.querySelector(".up").onclick = ()=>setDir(0,-1)
-document.querySelector(".down").onclick = ()=>setDir(0,1)
-document.querySelector(".left").onclick = ()=>setDir(-1,0)
-document.querySelector(".right").onclick = ()=>setDir(1,0)
+    hideAllOverlays()
+    UI.over.style.display = "flex"
+  }
 
-document.getElementById("pauseBtn").onclick = ()=>{
-  paused = !paused
-  document.getElementById("pauseBtn").innerText = paused?"▶":"⏸"
-}
+  const beginDeathAnimation = () => {
+    // Pixel crumble particles from snake body
+    const particles = []
+    const parts = State.snake
 
-document.getElementById("themeBtn").onclick = ()=>{
-  document.body.classList.toggle("light")
-}
+    for (const seg of parts) {
+      const baseX = cellToPx(seg.x) + 1
+      const baseY = cellToPx(seg.y) + 1
+      const w = BOX - 2
 
-document.getElementById("playBtn").onclick = ()=>{
-  document.getElementById("startScreen").style.display="none"
-  startSound()
-  start()
-}
+      const offsets = [
+        { ox: 2, oy: 2 },
+        { ox: w - 6, oy: 2 },
+        { ox: 2, oy: w - 6 },
+        { ox: w - 6, oy: w - 6 },
+      ]
 
-document.getElementById("restartBtn").onclick = ()=>{
-  document.getElementById("gameOverScreen").style.display="none"
-  startSound()
-  start()
-}
+      for (const o of offsets) {
+        const px = baseX + o.ox
+        const py = baseY + o.oy
+        particles.push({
+          x: px,
+          y: py,
+          vx: (Math.random() - 0.5) * 0.8,
+          vy: 0.4 + Math.random() * 1.2,
+          size: 4,
+          life: 1,
+        })
+      }
+    }
+
+    State.mode = "dying"
+    State.death = { t: now(), dur: 460, particles }
+  }
+
+  const setDir = (x, y) => {
+    if (State.mode === "dying" || State.mode === "start" || State.mode === "gameover") return
+    if (State.dir.x === -x && State.dir.y === -y) return
+    State.dir = { x, y }
+  }
+
+  const openPauseMenu = () => {
+    if (State.mode === "dying" || State.mode === "start" || State.mode === "gameover") return
+    State.mode = "paused"
+    hideAllOverlays()
+    UI.pauseMenu.style.display = "flex"
+    UI.pause.textContent = "▶"
+  }
+
+  const resumeGame = () => {
+    if (State.mode !== "paused") return
+    State.mode = "playing"
+    hideAllOverlays()
+    UI.pause.textContent = "⏸"
+  }
+
+  // Game tick
+  const tick = () => {
+    if (State.mode !== "playing") return
+
+    const head = State.snake[0]
+    const nx = (head.x + State.dir.x + COLS) % COLS
+    const ny = (head.y + State.dir.y + ROWS) % ROWS
+    const newHead = { x: nx, y: ny }
+
+    if (State.snake.some(p => p.x === newHead.x && p.y === newHead.y)) {
+      beginDeathAnimation()
+      return
+    }
+
+    State.snake.unshift(newHead)
+
+    if (newHead.x === State.food.x && newHead.y === State.food.y) {
+      State.score++
+      UI.score.textContent = String(State.score)
+
+      const t = now()
+      State.pop = { x: State.food.x, y: State.food.y, t, dur: 210 }
+      State.chomp = { t, dur: 170 }
+
+      beep(880)
+      vibrate(20)
+      spawnFood()
+    } else {
+      State.snake.pop()
+    }
+  }
+
+  // Rendering
+  const drawGrid = () => {
+    const grid = getComputedStyle(document.body).getPropertyValue("--grid").trim()
+    ctx.strokeStyle = grid
+    ctx.lineWidth = 1
+
+    for (let i = 0; i <= COLS; i++) {
+      const x = i * BOX + 0.5
+      ctx.beginPath()
+      ctx.moveTo(x, 0)
+      ctx.lineTo(x, canvas.height)
+      ctx.stroke()
+    }
+    for (let i = 0; i <= ROWS; i++) {
+      const y = i * BOX + 0.5
+      ctx.beginPath()
+      ctx.moveTo(0, y)
+      ctx.lineTo(canvas.width, y)
+      ctx.stroke()
+    }
+  }
+
+  const drawFood = () => {
+    ctx.font = "18px serif"
+    ctx.textBaseline = "alphabetic"
+    ctx.fillText(State.food.icon, cellToPx(State.food.x) + 2, cellToPx(State.food.y) + 18)
+  }
+
+  const drawPop = (t) => {
+    if (!State.pop) return
+    const { x, y, t: t0, dur } = State.pop
+    const p = (t - t0) / dur
+    if (p >= 1) { State.pop = null; return }
+
+    const frame = p < 0.33 ? 1 : (p < 0.66 ? 2 : 3)
+    const size = frame === 1 ? 6 : (frame === 2 ? 10 : 14)
+
+    const cx = cellToPx(x) + BOX / 2
+    const cy = cellToPx(y) + BOX / 2
+
+    const accent = getComputedStyle(document.body).getPropertyValue("--accent").trim()
+    ctx.fillStyle = accent
+
+    const half = size / 2
+    ctx.fillRect(Math.round(cx - half), Math.round(cy - half), size, 2)
+    ctx.fillRect(Math.round(cx - half), Math.round(cy + half - 2), size, 2)
+    ctx.fillRect(Math.round(cx - half), Math.round(cy - half), 2, size)
+    ctx.fillRect(Math.round(cx + half - 2), Math.round(cy - half), 2, size)
+  }
+
+  const drawHeadEyes = (cx, cy, scale = 1) => {
+    const dx = State.dir.x
+    const dy = State.dir.y
+    const lookX = dx * 4
+    const lookY = dy * 4
+
+    const eyeY = -4 * scale
+    const eyeX = 4 * scale
+
+    ctx.fillStyle = "#fff"
+    ctx.beginPath()
+    ctx.arc(cx - eyeX + lookX, cy + eyeY + lookY, 2.2 * scale, 0, Math.PI * 2)
+    ctx.arc(cx + eyeX + lookX, cy + eyeY + lookY, 2.2 * scale, 0, Math.PI * 2)
+    ctx.fill()
+
+    ctx.fillStyle = "#000"
+    ctx.beginPath()
+    ctx.arc(cx - eyeX + lookX, cy + eyeY + lookY, 1.1 * scale, 0, Math.PI * 2)
+    ctx.arc(cx + eyeX + lookX, cy + eyeY + lookY, 1.1 * scale, 0, Math.PI * 2)
+    ctx.fill()
+  }
+
+  const drawSnake = (t) => {
+    const head = State.snake[0]
+    if (!head) return
+
+    let headScale = 1
+    if (State.chomp) {
+      const p = (t - State.chomp.t) / State.chomp.dur
+      if (p >= 1) {
+        State.chomp = null
+      } else {
+        const bump = Math.sin(p * Math.PI)
+        headScale = 1 + bump * 0.12
+      }
+    }
+
+    const headColor = "#ffd1e1"
+    const bodyColor = "#ff6b9a"
+
+    for (let i = 0; i < State.snake.length; i++) {
+      const s = State.snake[i]
+      const x = cellToPx(s.x) + 1
+      const y = cellToPx(s.y) + 1
+      const w = BOX - 2
+      const h = BOX - 2
+
+      if (i === 0) {
+        const cx = x + w / 2
+        const cy = y + h / 2
+        const sw = w * headScale
+        const sh = h * headScale
+
+        ctx.fillStyle = headColor
+        ctx.fillRect(
+          Math.round(cx - sw / 2),
+          Math.round(cy - sh / 2),
+          Math.round(sw),
+          Math.round(sh)
+        )
+        drawHeadEyes(cx, cy, headScale)
+      } else {
+        ctx.fillStyle = bodyColor
+        ctx.fillRect(x, y, w, h)
+      }
+    }
+  }
+
+  const drawDeath = (t) => {
+    if (!State.death) return
+    const { t: t0, dur, particles } = State.death
+    const p = (t - t0) / dur
+
+    const accent = getComputedStyle(document.body).getPropertyValue("--accent").trim()
+    ctx.fillStyle = accent
+
+    for (const pt of particles) {
+      pt.x += pt.vx
+      pt.y += pt.vy
+      pt.vy += 0.06
+      pt.life = 1 - p
+
+      if (pt.life > 0.15 || Math.random() > 0.4) {
+        ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size)
+      }
+    }
+
+    if (p >= 1) {
+      State.death = null
+      endGame()
+    }
+  }
+
+  const render = (t) => {
+    const canvasBg = getComputedStyle(document.body).getPropertyValue("--canvas").trim()
+    ctx.fillStyle = canvasBg
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+
+    drawGrid()
+
+    if (State.mode === "dying") {
+      drawDeath(t)
+    } else {
+      drawFood()
+      drawPop(t)
+      drawSnake(t)
+    }
+
+    requestAnimationFrame(render)
+  }
+
+  // Main loop: fixed tick + rAF render
+  let lastTick = now()
+  const loop = () => {
+    const t = now()
+    if (t - lastTick >= TICK_MS) {
+      lastTick = t
+      tick()
+    }
+    requestAnimationFrame(loop)
+  }
+
+  // Controls: buttons
+  const bindButton = (selector, x, y) => {
+    document.querySelector(selector).onpointerdown = () => setDir(x, y)
+  }
+  bindButton(".up", 0, -1)
+  bindButton(".down", 0, 1)
+  bindButton(".left", -1, 0)
+  bindButton(".right", 1, 0)
+
+  // Controls: keyboard
+  document.addEventListener("keydown", (e) => {
+    const k = e.key
+    if (k === "ArrowUp" || k === "w" || k === "W") setDir(0, -1)
+    if (k === "ArrowDown" || k === "s" || k === "S") setDir(0, 1)
+    if (k === "ArrowLeft" || k === "a" || k === "A") setDir(-1, 0)
+    if (k === "ArrowRight" || k === "d" || k === "D") setDir(1, 0)
+
+    // Пауза: Esc / Space / Enter
+    if (k === "Escape" || k === " " || k === "Enter") {
+      if (State.mode === "playing") openPauseMenu()
+      else if (State.mode === "paused") resumeGame()
+    }
+  })
+
+  // Controls: swipe on canvas
+  let sx = 0, sy = 0
+  canvas.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY })
+  canvas.addEventListener("pointerup", (e) => {
+    const dx = e.clientX - sx
+    const dy = e.clientY - sy
+    if (Math.abs(dx) < 18 && Math.abs(dy) < 18) return
+    if (Math.abs(dx) > Math.abs(dy)) setDir(dx > 0 ? 1 : -1, 0)
+    else setDir(0, dy > 0 ? 1 : -1)
+  })
+
+  // UI actions
+  UI.theme.onpointerdown = () => document.body.classList.toggle("light")
+
+  UI.sound.onpointerdown = async () => {
+    await initAudio()
+    soundOn = !soundOn
+    localStorage.setItem("malorisa_sound", soundOn ? "1" : "0")
+    UI.sound.textContent = soundOn ? "🔊" : "🔇"
+    beep(520, 0.08)
+  }
+
+  // Pause button opens pause menu (continue or main menu)
+  UI.pause.onpointerdown = () => {
+    if (State.mode === "playing") openPauseMenu()
+    else if (State.mode === "paused") resumeGame()
+  }
+
+  UI.resume.onpointerdown = () => resumeGame()
+  UI.toMenu.onpointerdown = () => goToMenu()
+
+  UI.invite.onpointerdown = () => shareGame()
+
+  // ✅ Поставь свой сайт сюда
+  const SITE_URL = "https://example.com"
+  UI.site.onpointerdown = () => window.open(SITE_URL, "_blank")
+
+  UI.play.onpointerdown = async () => {
+    await initAudio()
+    beep(440, 0.14)
+    hideAllOverlays()
+    startGame()
+  }
+
+  UI.restart.onpointerdown = async () => {
+    await initAudio()
+    beep(440, 0.14)
+    hideAllOverlays()
+    startGame()
+  }
+
+  UI.menuFromOver.onpointerdown = () => goToMenu()
+
+  // Start loops
+  requestAnimationFrame(render)
+  requestAnimationFrame(loop)
+})()
 </script>
 
 </body>
