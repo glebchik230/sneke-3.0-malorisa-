@@ -30,7 +30,6 @@
   --accent:#ff6b9a;
   --grid:#1a1a1a;
 
-  /* Controls */
   --btn-face:#3a3a3a;
   --btn-shadow:#1a1a1a;
 }
@@ -89,16 +88,14 @@ canvas{
 }
 
 .controls{
-  /* ✅ ниже + дальше друг от друга */
-  margin-top: 50px;                 /* было без margin */
+  margin-top: 50px;
   display:grid;
   grid-template-columns:repeat(3,72px);
   grid-template-rows:repeat(2,72px);
-  gap: 18px;                        /* было 10px */
-  position:relative;               /* для подложки */
+  gap: 18px;
+  position:relative;
 }
 
-/* Подложка под крестовину (ретро-пульт) */
 .controls::before{
   content:"";
   position:absolute;
@@ -124,7 +121,6 @@ body.light .controls::before{
 }
 
 .btn{
-  /* ✅ GameBoy-ish кнопки */
   background: var(--btn-face);
   border-radius: 10px;
   display:flex;
@@ -206,6 +202,64 @@ body.light .btn{color:#222}
   opacity:0;
   transition:opacity .2s;
 }
+
+/* Ник на главном экране */
+.nick-wrap{
+  width:min(360px, 86vw);
+  background: rgba(255,255,255,0.03);
+  border-radius: 16px;
+  padding: 14px;
+  box-shadow:
+    inset -2px -2px 0 rgba(0,0,0,0.35),
+    inset 2px 2px 0 rgba(255,255,255,0.06);
+  margin-bottom: 10px;
+}
+.nick-label{
+  font-family:'Press Start 2P', monospace;
+  font-size: 10px;
+  opacity:.9;
+  margin-bottom: 10px;
+}
+.nick-row{
+  display:flex;
+  gap:10px;
+}
+.nick-input{
+  flex:1;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 2px solid rgba(255,255,255,0.12);
+  background: transparent;
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+body.light .nick-input{
+  border-color: rgba(0,0,0,0.12);
+}
+.nick-save{
+  font-family:'Press Start 2P', monospace;
+  padding: 12px 12px;
+  border-radius: 12px;
+  border: 2px solid var(--accent);
+  background: transparent;
+  color: var(--accent);
+  user-select:none;
+  white-space:nowrap;
+}
+.nick-hint{
+  margin-top:10px;
+  font-size: 12px;
+  opacity:.85;
+}
+.nick-status{
+  margin-top:8px;
+  font-size: 12px;
+  opacity:.9;
+  min-height: 16px;
+}
+.nick-status.ok{ color: #6dffb0; }
+.nick-status.err{ color: #ff7b9e; }
 </style>
 </head>
 
@@ -214,6 +268,18 @@ body.light .btn{color:#222}
 <!-- MAIN MENU -->
 <div class="overlay" id="start">
   <div class="logo">МАЛОРИСА</div>
+
+  <!-- ✅ Ввод и регистрация ника -->
+  <div class="nick-wrap">
+    <div class="nick-label">НИК (УНИКАЛЬНЫЙ)</div>
+    <div class="nick-row">
+      <input id="nick" class="nick-input" maxlength="24" placeholder="например: malorisa_fox" />
+      <div class="nick-save" id="saveNick">OK</div>
+    </div>
+    <div class="nick-hint">1–24 символа. Ники уникальны для всех игроков.</div>
+    <div class="nick-status" id="nickStatus"></div>
+  </div>
+
   <div class="pixel-btn" id="play">ИГРАТЬ</div>
 
   <div class="pixel-btn secondary" id="invite">ПРИГЛАСИТЬ ДРУГА</div>
@@ -238,6 +304,12 @@ body.light .btn{color:#222}
   </div>
   <div class="pixel-btn" id="restart">СНОВА</div>
   <div class="pixel-btn secondary" id="menuFromOver">В ГЛАВНОЕ МЕНЮ</div>
+
+  <!-- ✅ лидерборд -->
+  <div class="small" style="margin-top:16px;opacity:1;max-width:320px;text-align:left">
+    <div style="margin-bottom:8px;">🏆 Топ игроков:</div>
+    <div id="leaderboard" style="line-height:1.6"></div>
+  </div>
 </div>
 
 <header>
@@ -258,9 +330,17 @@ body.light .btn{color:#222}
   <div class="btn left">◀</div><div class="btn down">▼</div><div class="btn right">▶</div>
 </div>
 
-<script>
+<script type="module">
+import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+
 (() => {
   const $ = (id) => document.getElementById(id)
+
+  // ✅ Вставь Project URL из Supabase (Settings → API → Project URL)
+  const SUPABASE_URL = "https://xymyjykcispbuqexfgop.supabase.co"
+  // ✅ publishable key (твой)
+  const SUPABASE_PUBLISHABLE_KEY = "sb_publishable_vAQ-xCwv77sxrskSyrHPmg_DzoqHyi6"
+  const supabase = createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
 
   // DOM
   const canvas = $("game")
@@ -291,13 +371,19 @@ body.light .btn{color:#222}
     pause: $("pause"),
     theme: $("theme"),
     sound: $("sound"),
+
+    leaderboard: $("leaderboard"),
+
+    nick: $("nick"),
+    saveNick: $("saveNick"),
+    nickStatus: $("nickStatus"),
   }
 
   // Constants
   const BOX = 20
   const COLS = canvas.width / BOX
   const ROWS = canvas.height / BOX
-  const TICK_MS = 150 // фиксированная скорость (без роста сложности)
+  const TICK_MS = 150
   const FOODS = ["🍣","🍟","🍔","🍕"]
 
   // Persistent settings
@@ -308,7 +394,6 @@ body.light .btn{color:#222}
   UI.finalRecord.textContent = record
   UI.sound.textContent = soundOn ? "🔊" : "🔇"
 
-  // Toast
   const showToast = (text) => {
     UI.toast.textContent = text
     UI.toast.style.opacity = "1"
@@ -316,7 +401,128 @@ body.light .btn{color:#222}
     showToast._t = setTimeout(() => UI.toast.style.opacity = "0", 1400)
   }
 
-  // Share (Invite friend)
+  const setNickStatus = (text, kind = "") => {
+    UI.nickStatus.textContent = text || ""
+    UI.nickStatus.className = "nick-status " + (kind || "")
+  }
+
+  const normalizeNick = (s) => (s || "")
+    .trim()
+    .replace(/\s+/g, "_")
+    .slice(0, 24)
+
+  const getSavedPlayer = () => {
+    const player_id = localStorage.getItem("malorisa_player_id") || ""
+    const name = localStorage.getItem("malorisa_name") || ""
+    return { player_id, name }
+  }
+
+  const setSavedPlayer = ({ player_id, name }) => {
+    localStorage.setItem("malorisa_player_id", player_id)
+    localStorage.setItem("malorisa_name", name)
+  }
+
+  const ensureNickRegisteredUI = () => {
+    const { player_id, name } = getSavedPlayer()
+    if (name) UI.nick.value = name
+    if (player_id && name) {
+      setNickStatus(`✅ Ник закреплён: ${name}`, "ok")
+    } else {
+      setNickStatus("Введи ник и нажми OK", "")
+    }
+  }
+
+  // ✅ Регистрация ника в таблице malorisa_players (уникальность на стороне базы)
+  const registerNick = async () => {
+    const raw = UI.nick.value
+    const name = normalizeNick(raw)
+
+    if (!name || name.length < 1 || name.length > 24) {
+      setNickStatus("Ник должен быть 1–24 символа", "err")
+      return false
+    }
+
+    setNickStatus("⏳ Проверяем ник...", "")
+
+    try {
+      const { data, error } = await supabase
+        .from("malorisa_players")
+        .insert({ name })
+        .select("id,name")
+        .single()
+
+      if (error) {
+        // уникальный индекс: если ник занят — будет ошибка
+        // чаще всего Postgres code 23505, но supabase-js может отдавать текстом
+        const msg = (error?.message || "").toLowerCase()
+        if (msg.includes("duplicate") || msg.includes("unique") || msg.includes("23505")) {
+          setNickStatus("❌ Ник уже занят. Выбери другой.", "err")
+          return false
+        }
+        console.warn("registerNick error:", error)
+        setNickStatus("❌ Ошибка регистрации ника", "err")
+        return false
+      }
+
+      setSavedPlayer({ player_id: data.id, name: data.name })
+      setNickStatus(`✅ Ник закреплён: ${data.name}`, "ok")
+      showToast("Ник сохранён ✅")
+      return true
+    } catch (e) {
+      console.warn("registerNick exception:", e)
+      setNickStatus("❌ Ошибка сети/сервера", "err")
+      return false
+    }
+  }
+
+  // ✅ Лидерборд (топ по лучшему результату игрока)
+  const renderLeaderboard = (rows) => {
+    if (!UI.leaderboard) return
+    if (!rows?.length) {
+      UI.leaderboard.textContent = "Пока пусто — будь первым 🙂"
+      return
+    }
+    UI.leaderboard.innerHTML = rows.map((r, i) => {
+      const safeName = String(r.name).replace(/[<>&"]/g, (c) => ({
+        "<":"&lt;", ">":"&gt;", "&":"&amp;", '"':"&quot;"
+      }[c]))
+      return `${i+1}. ${safeName} — <b>${r.best_score}</b>`
+    }).join("<br>")
+  }
+
+  const loadLeaderboard = async () => {
+    try {
+      const { data, error } = await supabase
+        .from("malorisa_leaderboard")
+        .select("name, best_score, first_best_time")
+        .order("best_score", { ascending: false })
+        .order("first_best_time", { ascending: true })
+        .limit(10)
+
+      if (error) throw error
+      renderLeaderboard(data)
+    } catch (e) {
+      console.warn("Leaderboard load error:", e)
+      if (UI.leaderboard) UI.leaderboard.textContent = "Не удалось загрузить топ 😕"
+    }
+  }
+
+  const submitScore = async (score) => {
+    const { player_id, name } = getSavedPlayer()
+    if (!player_id || !name) return
+
+    try {
+      const { error } = await supabase
+        .from("malorisa_scores")
+        .insert({ player_id, name, score })
+
+      if (error) throw error
+    } catch (e) {
+      console.warn("Score submit error:", e)
+    }
+  }
+
+  // Share
   const shareGame = async () => {
     const text = "Попробуй побить мой рекорд в змейке от МалоРиса"
     const url = location.href
@@ -337,7 +543,7 @@ body.light .btn{color:#222}
     }
   }
 
-  // Audio (safe start after user gesture)
+  // Audio
   let audioCtx = null
   const initAudio = async () => {
     if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)()
@@ -356,26 +562,22 @@ body.light .btn{color:#222}
     o.start()
     o.stop(audioCtx.currentTime + dur)
   }
-
   const vibrate = (ms = 20) => {
     if (navigator.vibrate) navigator.vibrate(ms)
   }
 
   // State
   const State = {
-    mode: "start", // start | playing | paused | dying | gameover
+    mode: "start",
     snake: [],
     dir: { x: 1, y: 0 },
     food: { x: 5, y: 5, icon: "🍣" },
     score: 0,
-
-    // Animations
-    pop: null,      // {x,y,t, dur}
-    chomp: null,    // {t, dur}
-    death: null,    // {t, dur, particles: [...]}
+    pop: null,
+    chomp: null,
+    death: null,
   }
 
-  // Helpers
   const cellToPx = (c) => c * BOX
   const now = () => performance.now()
 
@@ -419,7 +621,7 @@ body.light .btn{color:#222}
     spawnFood()
   }
 
-  const endGame = () => {
+  const endGame = async () => {
     State.mode = "gameover"
 
     if (State.score > record) {
@@ -433,10 +635,12 @@ body.light .btn{color:#222}
 
     hideAllOverlays()
     UI.over.style.display = "flex"
+
+    await submitScore(State.score)
+    await loadLeaderboard()
   }
 
   const beginDeathAnimation = () => {
-    // Pixel crumble particles from snake body
     const particles = []
     const parts = State.snake
 
@@ -654,7 +858,6 @@ body.light .btn{color:#222}
       pt.y += pt.vy
       pt.vy += 0.06
       pt.life = 1 - p
-
       if (pt.life > 0.15 || Math.random() > 0.4) {
         ctx.fillRect(Math.round(pt.x), Math.round(pt.y), pt.size, pt.size)
       }
@@ -741,7 +944,6 @@ body.light .btn{color:#222}
     beep(520, 0.08)
   }
 
-  // Pause button opens pause menu (continue or main menu)
   UI.pause.onpointerdown = () => {
     if (State.mode === "playing") openPauseMenu()
     else if (State.mode === "paused") resumeGame()
@@ -752,11 +954,30 @@ body.light .btn{color:#222}
 
   UI.invite.onpointerdown = () => shareGame()
 
-  // ✅ Поставь свой сайт сюда
   const SITE_URL = "https://malorisa.ru"
   UI.site.onpointerdown = () => window.open(SITE_URL, "_blank")
 
+  // ✅ регистрация ника (OK)
+  UI.saveNick.onpointerdown = async () => {
+    await registerNick()
+  }
+
+  // Enter в поле ника = OK
+  UI.nick.addEventListener("keydown", async (e) => {
+    if (e.key === "Enter") await registerNick()
+  })
+
+  // ✅ Играть можно только если ник закреплён (есть player_id)
+  const canPlay = () => {
+    const { player_id, name } = getSavedPlayer()
+    return Boolean(player_id && name)
+  }
+
   UI.play.onpointerdown = async () => {
+    if (!canPlay()) {
+      setNickStatus("Сначала закрепи уникальный ник (нажми OK)", "err")
+      return
+    }
     await initAudio()
     beep(440, 0.14)
     hideAllOverlays()
@@ -764,6 +985,11 @@ body.light .btn{color:#222}
   }
 
   UI.restart.onpointerdown = async () => {
+    if (!canPlay()) {
+      goToMenu()
+      setNickStatus("Сначала закрепи уникальный ник (нажми OK)", "err")
+      return
+    }
     await initAudio()
     beep(440, 0.14)
     hideAllOverlays()
@@ -771,6 +997,11 @@ body.light .btn{color:#222}
   }
 
   UI.menuFromOver.onpointerdown = () => goToMenu()
+
+  // Init UI
+  ensureNickRegisteredUI()
+  // (не обязательно, но приятно) покажем топ сразу
+  loadLeaderboard()
 
   // Start loops
   requestAnimationFrame(render)
@@ -780,3 +1011,4 @@ body.light .btn{color:#222}
 
 </body>
 </html>
+ 
