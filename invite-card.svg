@@ -1,0 +1,88 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#07070C"/>
+      <stop offset="1" stop-color="#12122A"/>
+    </linearGradient>
+
+    <radialGradient id="glowPink" cx="0.2" cy="0.18" r="0.55">
+      <stop offset="0" stop-color="#FF6B9A" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#FF6B9A" stop-opacity="0"/>
+    </radialGradient>
+
+    <radialGradient id="glowCyan" cx="0.82" cy="0.2" r="0.55">
+      <stop offset="0" stop-color="#8BE9FF" stop-opacity="0.22"/>
+      <stop offset="1" stop-color="#8BE9FF" stop-opacity="0"/>
+    </radialGradient>
+
+    <linearGradient id="card" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.08"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0.05"/>
+    </linearGradient>
+
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="18" stdDeviation="18" flood-color="#000" flood-opacity="0.55"/>
+    </filter>
+
+    <style>
+      .h1 { font: 800 64px system-ui, -apple-system, Segoe UI, Arial; }
+      .h2 { font: 800 34px system-ui, -apple-system, Segoe UI, Arial; letter-spacing: 2px; }
+      .p  { font: 600 34px system-ui, -apple-system, Segoe UI, Arial; }
+      .s  { font: 600 26px system-ui, -apple-system, Segoe UI, Arial; }
+      .mini { font: 800 18px system-ui, -apple-system, Segoe UI, Arial; letter-spacing: 1px; }
+    </style>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1200" height="630" fill="url(#bg)"/>
+  <rect width="1200" height="630" fill="url(#glowPink)"/>
+  <rect width="1200" height="630" fill="url(#glowCyan)"/>
+
+  <!-- Card -->
+  <g filter="url(#shadow)">
+    <rect x="70" y="70" width="1060" height="490" rx="34"
+          fill="url(#card)"
+          stroke="#FFFFFF" stroke-opacity="0.14" stroke-width="2"/>
+  </g>
+
+  <!-- Badge -->
+  <rect x="890" y="104" width="200" height="56" rx="18"
+        fill="#FF6B9A" fill-opacity="0.14"
+        stroke="#FF6B9A" stroke-opacity="0.55" stroke-width="2"/>
+  <text x="915" y="140" class="mini" fill="#FF6B9A">MOBILE LINK</text>
+
+  <!-- Title -->
+  <text x="122" y="175" class="h1" fill="#FF6B9A">МАЛОРИСА</text>
+  <text x="122" y="222" class="h2" fill="#FFFFFF" opacity="0.92">ЗМЕЙКА</text>
+
+  <!-- Snake head -->
+  <g transform="translate(125, 270)">
+    <rect x="0" y="0" width="72" height="72" rx="16" fill="#FFD1E1"/>
+    <rect x="6" y="6" width="60" height="6" rx="3" fill="#FFFFFF" opacity="0.14"/>
+    <circle cx="26" cy="30" r="6" fill="#FFFFFF"/>
+    <circle cx="46" cy="30" r="6" fill="#FFFFFF"/>
+    <circle cx="26" cy="30" r="3" fill="#000"/>
+    <circle cx="46" cy="30" r="3" fill="#000"/>
+    <rect x="28" y="46" width="16" height="7" rx="3" fill="#000" opacity="0.55"/>
+    <rect x="33" y="46" width="4" height="2" rx="1" fill="#FFF"/>
+  </g>
+
+  <!-- Food -->
+  <g transform="translate(235, 286)">
+    <text x="0" y="26" font-size="22">🍣</text>
+    <text x="60" y="26" font-size="22">🍟</text>
+    <text x="120" y="26" font-size="22">🍔</text>
+    <text x="180" y="26" font-size="22">🍕</text>
+  </g>
+
+  <!-- Text -->
+  <text x="122" y="380" class="p" fill="#FFFFFF">Закажи в лучшей доставке еды,</text>
+  <text x="122" y="428" class="p" fill="#FFFFFF">а пока ждёшь заказ — попробуй</text>
+  <text x="122" y="476" class="p" fill="#FFFFFF">обойти меня в змейке от Мало Риса</text>
+
+  <!-- URL -->
+  <rect x="122" y="525" width="956" height="2" fill="#FFFFFF" opacity="0.16"/>
+  <text x="122" y="565" class="s" fill="#FFFFFF" opacity="0.78">
+    https://malorisa.ru/tumen/mobile_app_link
+  </text>
+</svg>
