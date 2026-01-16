@@ -23,7 +23,6 @@
 
 <style>
 :root{
-  /* Dark theme */
   --bg0:#07070c;
   --bg1:#10101a;
 
@@ -52,7 +51,6 @@
   --radius-md: 14px;
 }
 body.light{
-  /* Light theme */
   --bg0:#f6f6fb;
   --bg1:#ececf5;
 
@@ -92,7 +90,6 @@ body{
   overflow:hidden;
 }
 
-/* subtle grain */
 body::before{
   content:"";
   position:fixed;
@@ -102,7 +99,6 @@ body::before{
   mix-blend-mode: overlay;
   background-image:
     url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23n)' opacity='0.75'/%3E%3C/svg%3E");
-  transform: translateZ(0);
 }
 
 header{
@@ -218,7 +214,7 @@ body.light .btn{ color: rgba(0,0,0,0.78); }
 .down{grid-column:2}
 .right{grid-column:3}
 
-/* Overlays (дороже + плавно) */
+/* Overlays */
 .overlay{
   position:fixed;
   inset:0;
@@ -371,7 +367,6 @@ body.light .nick-input{
   <div class="card">
     <div class="logo">МАЛОРИСА</div>
 
-    <!-- Ник -->
     <div class="nick-wrap">
       <div class="nick-label">НИК (УНИКАЛЬНЫЙ)</div>
       <div class="nick-row">
@@ -534,22 +529,28 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     else setNickStatus("Введи ник и нажми OK", "");
   };
 
-  // Overlay helpers (плавнее)
+  // ✅ FIXED Overlay helpers (не исчезает Game Over)
   const showOverlay = (el) => {
+    if (el._hideTimer) { clearTimeout(el._hideTimer); el._hideTimer = null; }
     el.style.display = "flex";
     requestAnimationFrame(() => el.classList.add("show"));
   };
   const hideOverlay = (el) => {
     el.classList.remove("show");
-    setTimeout(() => { el.style.display = "none"; }, 190);
+    if (el._hideTimer) clearTimeout(el._hideTimer);
+    el._hideTimer = setTimeout(() => {
+      el.style.display = "none";
+      el._hideTimer = null;
+    }, 190);
   };
-  const hideAllOverlays = () => {
-    hideOverlay(UI.start);
-    hideOverlay(UI.pauseMenu);
-    hideOverlay(UI.over);
+  const hideAllOverlays = (exceptEl = null) => {
+    for (const el of [UI.start, UI.pauseMenu, UI.over]) {
+      if (!el || el === exceptEl) continue;
+      hideOverlay(el);
+    }
   };
 
-  // Register nick in malorisa_players
+  // Register nick
   const registerNick = async () => {
     const raw = UI.nick.value;
     const name = normalizeNick(raw);
@@ -679,17 +680,18 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     food: { x: 5, y: 5, icon: "🍣" },
     score: 0,
     pop: null,
-    chomp: null,  // {t, dur}
+    chomp: null,
     death: null,
     foodWobbleT: 0,
   };
 
+  // Constants helpers
   const cellToPx = (c) => c * BOX;
   const now = () => performance.now();
 
   const goToMenu = () => {
     State.mode = "start";
-    hideAllOverlays();
+    hideAllOverlays(UI.start);
     showOverlay(UI.start);
     UI.pause.textContent = "⏸";
   };
@@ -700,7 +702,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
       f = {
         x: Math.floor(Math.random() * COLS),
         y: Math.floor(Math.random() * ROWS),
-        icon: FOODS[Math.floor(Math.random() * FOODS.length)],
+        icon: ["🍣","🍟","🍔","🍕"][Math.floor(Math.random() * 4)],
       };
     } while (State.snake.some(p => p.x === f.x && p.y === f.y));
     State.food = f;
@@ -712,6 +714,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     State.dir = { x: 1, y: 0 };
     State.score = 0;
     State.mode = "playing";
+
     State.pop = null;
     State.chomp = null;
     State.death = null;
@@ -733,7 +736,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     UI.finalRecord.textContent = record;
     UI.finalScore.textContent = State.score;
 
-    hideAllOverlays();
+    hideAllOverlays(UI.over);
     showOverlay(UI.over);
 
     await submitScore(State.score);
@@ -785,7 +788,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   const openPauseMenu = () => {
     if (State.mode === "dying" || State.mode === "start" || State.mode === "gameover") return;
     State.mode = "paused";
-    hideAllOverlays();
+    hideAllOverlays(UI.pauseMenu);
     showOverlay(UI.pauseMenu);
     UI.pause.textContent = "▶";
     beep(520, 0.08);
@@ -794,7 +797,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   const resumeGame = () => {
     if (State.mode !== "paused") return;
     State.mode = "playing";
-    hideAllOverlays();
+    hideAllOverlays(); // no overlay should remain
     UI.pause.textContent = "⏸";
     beep(520, 0.08);
   };
@@ -854,7 +857,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   };
 
   const drawFood = (t) => {
-    // лёгкая "дорогая" анимация: покачивание/пульс
     const wob = Math.sin((t - State.foodWobbleT) / 180) * 1.2;
     const pulse = 1 + Math.sin((t - State.foodWobbleT) / 240) * 0.05;
 
@@ -893,7 +895,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     ctx.arc(cx, cy, r, 0, Math.PI * 2);
     ctx.stroke();
 
-    // tiny sparkles
     ctx.fillStyle = accent;
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2;
@@ -907,7 +908,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   };
 
   const drawHeadFace = (cx, cy, scale = 1, chomp = 0) => {
-    // Eyes
     const dx = State.dir.x, dy = State.dir.y;
     const lookX = dx * 4, lookY = dy * 4;
 
@@ -926,15 +926,14 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     ctx.arc(cx + eyeX + lookX, cy + eyeY + lookY, 1.1 * scale, 0, Math.PI * 2);
     ctx.fill();
 
-    // Mouth (открывается при chomp)
+    // Mouth (opens on chomp)
     const mx = cx + dx * 5;
     const my = cy + dy * 5 + 4;
     const w = 8 * scale;
-    const open = Math.max(1, Math.round(chomp * 5)); // 1..5
+    const open = Math.max(1, Math.round(chomp * 5));
     ctx.fillStyle = "rgba(0,0,0,0.55)";
     ctx.fillRect(Math.round(mx - w/2), Math.round(my), Math.round(w), open);
 
-    // Tiny tooth highlight
     if (chomp > 0.15) {
       ctx.fillStyle = "rgba(255,255,255,0.70)";
       ctx.fillRect(Math.round(mx - 2), Math.round(my), 2, 1);
@@ -981,21 +980,17 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
         const rw = Math.round(sw);
         const rh = Math.round(sh);
 
-        // Head base
         ctx.fillStyle = headColor;
         ctx.fillRect(rx, ry, rw, rh);
 
-        // Head highlight
         ctx.fillStyle = "rgba(255,255,255,0.14)";
         ctx.fillRect(rx + 2, ry + 2, Math.max(0, rw - 6), 2);
 
-        // Face
         drawHeadFace(cx, cy, headScale, chomp);
       } else {
         ctx.fillStyle = bodyColor;
         ctx.fillRect(x, y, w, h);
 
-        // subtle body highlight
         ctx.fillStyle = "rgba(255,255,255,0.10)";
         ctx.fillRect(x + 2, y + 2, Math.max(0, w - 6), 1);
       }
@@ -1029,7 +1024,6 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   };
 
   const render = (t) => {
-    // background fill (keeps it crisp)
     const canvasBg = getComputedStyle(document.body).getPropertyValue("--canvas").trim();
     ctx.fillStyle = canvasBg;
     ctx.fillRect(0, 0, canvas.width, canvas.height);
@@ -1047,7 +1041,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     requestAnimationFrame(render);
   };
 
-  // Main loop
+  // Tick loop
   let lastTick = now();
   const loop = () => {
     const t = now();
@@ -1058,7 +1052,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     requestAnimationFrame(loop);
   };
 
-  // Controls buttons
+  // Controls: buttons
   const bindButton = (selector, x, y) => {
     const el = document.querySelector(selector);
     el.onpointerdown = () => setDir(x, y);
@@ -1068,7 +1062,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   bindButton(".left", -1, 0);
   bindButton(".right", 1, 0);
 
-  // Keyboard
+  // Controls: keyboard
   document.addEventListener("keydown", (e) => {
     const k = e.key;
     if (k === "ArrowUp" || k === "w" || k === "W") setDir(0, -1);
@@ -1082,7 +1076,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     }
   });
 
-  // Swipe
+  // Controls: swipe
   let sx = 0, sy = 0;
   canvas.addEventListener("pointerdown", (e) => { sx = e.clientX; sy = e.clientY; });
   canvas.addEventListener("pointerup", (e) => {
@@ -1134,7 +1128,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     }
     await initAudio();
     beep(440, 0.14);
-    hideAllOverlays();
+    hideAllOverlays(); // hide menu
     startGame();
   };
 
@@ -1146,7 +1140,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
     }
     await initAudio();
     beep(440, 0.14);
-    hideAllOverlays();
+    hideAllOverlays(); // hide game over
     startGame();
   };
 
@@ -1155,6 +1149,13 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
   // Init UI
   ensureNickRegisteredUI();
   loadLeaderboard();
+
+  // Buttons actions for overlays
+  UI.toMenu.onpointerdown = () => goToMenu();
+  UI.resume.onpointerdown = () => resumeGame();
+
+  // Save nick
+  UI.saveNick.onpointerdown = async () => { await registerNick(); };
 
   // Start loops
   requestAnimationFrame(render);
