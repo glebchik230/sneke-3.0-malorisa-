@@ -702,7 +702,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
       f = {
         x: Math.floor(Math.random() * COLS),
         y: Math.floor(Math.random() * ROWS),
-        icon: ["🍣","🍟","🍔","🍕"][Math.floor(Math.random() * 4)],
+        icon: ["🍣","🍟","🍔","🌭","🌯","🥡","🍲","🍚","🌮","🥐","🍙","🍤","🍘","🍕"][Math.floor(Math.random() * 4)],
       };
     } while (State.snake.some(p => p.x === f.x && p.y === f.y));
     State.food = f;
